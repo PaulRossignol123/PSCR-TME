@@ -1,19 +1,13 @@
 #include <cstddef>
 #include <vector>
 #include <forward_list>
-
-/*À FAIRE
-    * Voir comment utiliser la fonction de hachage
-    */
-
-
+#include <iostream>
 using namespace std;
 namespace pr {
-//test
 
 template <typename K, typename V>
 
-class Hashtable{
+class HashTable{
     public :
     class Entry{
         public:
@@ -27,9 +21,10 @@ class Hashtable{
     size_t sz;                    //Nombre d'entrées
 
     public :
-    Hashtable(size_t szb) : bucket(szb){
+    HashTable(size_t szb) : bucket(szb){
         sz = 0;
     }
+
     // (Les mécanismes de la classe canonique sont implémentés par défaut par le compilateur, pas besoin de les réécrire.)
 
     /*Fonction qui rend l'adresse de la valeur associée à la clé key si on la trouve, nullptr sinon*/
@@ -64,4 +59,10 @@ class Hashtable{
     /*Fonction qui indique la taille de la hashtable (nombre d'entrées effectives dedans)*/
     size_t size() const{return sz;}
     };
+	template<typename Iterator>
+		Iterator find(Iterator lit,Iterator end){
+
+	}
+
+
 }

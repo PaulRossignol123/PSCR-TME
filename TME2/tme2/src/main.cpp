@@ -3,10 +3,36 @@
 #include <regex>
 #include <chrono>
 #include <vector>
+#include "HashMap.h"
+
+template <typename Iterator>
+size_t count(Iterator begin,Iterator end){
+	size_t count = 0;
+	while(begin != end){
+		count++;
+		++begin;
+	}
+	return count;
+}
+template <typename Iterator,typename  T>
+size_t count_if_equal(Iterator begin,Iterator end, const T& val){
+		size_t count = 0;
+	while(begin != end){
+		if(*begin == val){
+			count++;
+		}
+		++begin;
+	}
+	return count;
+}
+
+
 int main () {
+
 	using namespace std;
 	using namespace std::chrono;
-
+	using namespace pr;
+	/*
 	ifstream input = ifstream("WarAndPeace.txt");
 
 	auto start = steady_clock::now();
@@ -15,7 +41,7 @@ int main () {
 	size_t nombre_lu = 0;
 	// prochain mot lu
 	string word;
-	// une regex qui reconnait les caractères anormaux (négation des lettres)
+	// une regex qui reconnait les cara  ctères anormaux (négation des lettres)
 	std::vector<std::pair<std::string,int>> vc;
 
 	regex re( R"([^a-zA-Z])");
@@ -55,8 +81,16 @@ int main () {
               << "ms.\n";
 
     cout << "Found a total of " << nombre_lu << " words." << endl;
-
-    return 0;
+	*/
+	int arr[] = {1,2,3,2,2,4,5,6};
+	int val = 2;
+	size_t result = count(arr, arr+sizeof(arr)/sizeof(arr[0]));
+	size_t result2 = count_if_equal(arr, arr+sizeof(arr)/sizeof(arr[0]),val);
+	std::cout <<"Le nombre d'éléments est :" << result << std::endl;
+	std::cout <<"Le nombre d'éléments égaux à 2 est :  " << result2 << std::endl;
+	size_t u = 4;
+	HashTable<int,int>*h;
+	return 0;
 }
 
 
