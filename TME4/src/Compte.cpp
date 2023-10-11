@@ -19,6 +19,11 @@ int Compte::getSolde() const  {
 	unique_lock<mutex> g(m);
 	return solde;
 }
+
+mutex & Compte::getMutex(){
+	return m;
+}
+
 // NB : vector exige Copyable, mais mutex ne l'est pas...
 Compte::Compte(const Compte & other) {
 	other.m.lock();
