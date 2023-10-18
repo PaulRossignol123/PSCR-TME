@@ -1,4 +1,8 @@
+#include <iostream>
+#include<thread>
+#include<chrono>
 #pragma once
+using namespace std;
 
 namespace pr {
 
@@ -10,7 +14,7 @@ public:
 
 // Job concret : exemple
 
-/**
+
 class SleepJob : public Job {
 	int calcul (int v) {
 		std::cout << "Computing for arg =" << v << std::endl;
@@ -29,6 +33,5 @@ public :
 	}
 	~SleepJob(){}
 };
-**/
 
 }

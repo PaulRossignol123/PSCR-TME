@@ -51,7 +51,7 @@ int findClosestInter(const Scene & scene, const Rayon & ray) {
 
 // Calcule l'angle d'incidence du rayon à la sphere, cumule l'éclairage des lumières
 // En déduit la couleur d'un pixel de l'écran.
-Color computeColor(const Sphere & obj, const Rayon & ray, const Vec3D & camera, std::vector<Vec3D> & lights) {
+Color computeColor(const void poolWorker(Queue<Job>&queue){Sphere & obj, const Rayon & ray, const Vec3D & camera, std::vector<Vec3D> & lights) {
 	Color finalcolor = obj.getColor();
 
 	// calcul du rayon et de sa normale a la sphere

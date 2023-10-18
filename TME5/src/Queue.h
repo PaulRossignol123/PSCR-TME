@@ -3,7 +3,8 @@
 
 #include <cstdlib>
 #include <mutex>
-
+#include <condition_variable>
+#include <thread>
 namespace pr {
 
 // MT safe version of the Queue, non blocking.
@@ -14,7 +15,8 @@ class Queue {
 	size_t begin;
 	size_t sz;
 	mutable std::mutex m;
-
+	std::condition_variable cv;
+	bool isBlocking = false;
 	// fonctions private, sans protection mutex
 	bool empty() const {
 		return sz == 0;
@@ -33,8 +35,11 @@ public:
 	}
 	T* pop() {
 		std::unique_lock<std::mutex> lg(m);
-		if (empty()) {
-			return nullptr;
+		while(empty()){
+			cv.wait(lg);
+		}
+		if (full()) {
+			cv.notify_all();
 		}
 		auto ret = tab[begin];
 		tab[begin] = nullptr;
@@ -44,12 +49,20 @@ public:
 	}
 	bool push(T* elt) {
 		std::unique_lock<std::mutex> lg(m);
-		if (full()) {
-			return false;
+		while (full()) {
+			cv.wait(lg);
+		}
+		if(empty()){
+			cv.notify_all();
 		}
 		tab[(begin + sz) % allocsize] = elt;
 		sz++;
 		return true;
+	}
+	void setBlocking(bool isBlocking){
+		std::unique_lock<std::mutex> lg(m);
+		this ->isBlocking = isBlocking;
+		cv.notify_all();
 	}
 	~Queue() {
 		// ?? lock a priori inutile, ne pas detruire si on travaille encore avec
