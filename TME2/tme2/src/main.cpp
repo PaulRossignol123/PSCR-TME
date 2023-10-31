@@ -38,7 +38,7 @@ int main () {
 	ifstream input = ifstream("WarAndPeace.txt");
 
 	auto start = steady_clock::now();
-	cout << "Parsing War and Peace" << endl;
+	cout << "Parsing War and Peace zazzerd" << endl;
 	size_t t = 20333;
 	HashTable<string,int>h(t);
 	size_t nombre_lu = 0;
@@ -49,7 +49,7 @@ int main () {
 
 	regex re( R"([^a-zA-Z])");
 	while (input >> word) {
-		bool pres = false;
+		//bool pres = false;
 		// élimine la ponctuation et les caractères spéciaux
 		word = regex_replace ( word, re, "");
 		// passe en lowercase
@@ -68,6 +68,8 @@ int main () {
 			// on affiche un mot "propre" sur 100
 				cout << nombre_lu << ": "<< word << endl;
 		nombre_lu++;
+
+		/*
 		for(auto& paire:vc){
 			std::string chaine = paire.first;
 
@@ -81,23 +83,39 @@ int main () {
 		if(pres == false){
 
 			vc.push_back(std::make_pair(word,1));
-		}
+		}*/
 
 	}
 	input.close();
-	cout << "Finished Parsing War and Peace" << endl;
+	cout << "Finished Parsing War and Peac  zea e" << endl;
 
 	 std::vector<pair<string,int>>vector1;
 
+
+
+
+
+
+
+
 	 for (size_t i = 0; i < h.size(); i++) {
-	        for (const auto& entry : h.bucket[i]) {
-	            vector1.push_back(make_pair(entry.key, entry.value));
+	     for (const auto& entry : h.getBucket()[i]){
+	    	 vector1.push_back(make_pair(entry.key, entry.value));
 	        }
 	    }
 	 std::sort(vector1.begin(), vector1.end(), sortByValueDescending);
-	 for (int i = 0; i < 10; i++) {
-	        std::cout << "Mot : " << vector1[i].first << ", Occurrences : " << vector1[i].second << std::endl;
-	    }
+	 if(h.bucket.empty()){
+		 return true;
+	 }
+	 int i =0;
+	 cout << "NB MOT "<< i << endl;
+	 for (auto it = h.begin(); it != h.end(); ++it) {
+	     for (const auto& entry : *it) {
+	         cout << "Key: " << entry.key << ", Word: " << entry.value << endl;
+	     }
+	 }
+	 cout << "NB MOT "<< i << endl;
+
 
 
 

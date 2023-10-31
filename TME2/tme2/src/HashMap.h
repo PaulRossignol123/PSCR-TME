@@ -1,128 +1,125 @@
-#include <iostream>
-#include <fstream>
-#include <regex>
-#include <chrono>
+#include <cstddef>
 #include <vector>
-#include "HashMap.h"
+#include <forward_list>
+#include <iostream>
+using namespace std;
+namespace pr {
 
-template <typename Iterator>
-size_t count(Iterator begin,Iterator end){
-	size_t count = 0;
-	while(begin != end){
-		count++;
-		++begin;
-	}
-	return count;
-}
-template <typename Iterator,typename  T>
-size_t count_if_equal(Iterator begin,Iterator end, const T& val){
-		size_t count = 0;
-	while(begin != end){
-		if(*begin == val){
-			count++;
-		}
-		++begin;
-	}
-	return count;
-}
-bool sortByValueDescending(const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
-    return a.second > b.second;
-}
+template <typename K, typename V>
 
-int main () {
+class HashTable{
+    public :
+    class Entry{
+        public:
+        const K key;
+        V value;
+        Entry(const K& key, const V& value):key(key), value(value){}
+    };
 
-	using namespace std;
-	using namespace std::chrono;
-	using namespace pr;
-
-	ifstream input = ifstream("WarAndPeace.txt");
-
-	auto start = steady_clock::now();
-	cout << "Parsing War and Peace" << endl;
-	size_t t = 20333;
-	HashTable<string,int>h(t);
-	size_t nombre_lu = 0;
-	// prochain mot lu
-	string word;
-	// une regex qui reconnait les caractères anormaux (négation des lettres)
-	std::vector<std::pair<std::string,int>> vc;
-
-	regex re( R"([^a-zA-Z])");
-	while (input >> word) {
-		bool pres = false;
-		// élimine la ponctuation et les caractères spéciaux
-		word = regex_replace ( word, re, "");
-		// passe en lowercase
-		transform(word.begin(),word.end(),word.begin(),::tolower);
-		// word est maintenant "tout propre"
-
-		if(h.get(word) == nullptr){
-			h.put(word,1);
-		}else{
-			int x = *h.get(word);
-			x++;
-			h.put(word,x);
-		}
-
-		if (nombre_lu % 100 == 0)
-			// on affiche un mot "propre" sur 100
-				cout << nombre_lu << ": "<< word << endl;
-		nombre_lu++;
-		for(auto& paire:vc){
-			std::string chaine = paire.first;
-
-			if(chaine == word){
-				pres = true;
-				paire.second += 1;
-				break;
-			}
-
-		}
-		if(pres == false){
-
-			vc.push_back(std::make_pair(word,1));
-		}
-
-	}
-	input.close();
-	cout << "Finished Parsing War and Peace" << endl;
-
-	 std::vector<pair<string,int>>vector1;
-
-	 for (size_t i = 0; i < h.size(); i++) {
-	        for (const auto& entry : h.bucket[i]) {
-	            vector1.push_back(make_pair(entry.key, entry.value));
-	        }
-	    }
-	 std::sort(vector1.begin(), vector1.end(), sortByValueDescending);
-	 for (int i = 0; i < 10; i++) {
-	        std::cout << "Mot : " << vector1[i].first << ", Occurrences : " << vector1[i].second << std::endl;
-	    }
+    public:
+    std::vector <std::forward_list<Entry>> bucket ;
+    size_t sz;
+    //Nombre d'entrées
 
 
+    public :
+    HashTable(size_t szb) : bucket(szb){
+        sz = 0;
+    }
+    const std::vector <std::forward_list<Entry>>& getBucket(){return bucket;}
+
+    // (Les mécanismes de la classe canonique sont implémentés par défaut par le compilateur, pas besoin de les réécrire.)
+
+    /*Fonction qui rend l'adresse de la valeur associée à la clé key si on la trouve, nullptr sinon*/
+    V* get (const K & key){
+        size_t ind = (std::hash<K>() (key)) % bucket.size();    //Hasher standard
+
+        /*Trouver le mot dans la hashmap*/
+        for (auto& e : bucket[ind]){
+            if (e.key == key){
+                return &e.value;
+            }
+        }
+        return nullptr;
+    }
+    /*Fonction qui ajoute l'association (key, value) à la table.
+    * La fonction rend vrai si la valeur associée à key a été mise à jour dans la table,
+    * et faux si on a réalisé une insertion (la clé n'était pas encore dans la table).*/
+    bool put (const K & key, const V value){
+        size_t ind = std::hash<K>() (key) % bucket.size();
+
+        for(auto & e : bucket[ind]){
+		    if (e.key == key){
+                e.value = value;
+                return true;
+            }
+    	}
+        /*On ne l'a pas trouvé dans le bucket, il faut créer l'association dans la table*/
+        bucket[ind].emplace_front(key,value);           //emplace évite de créer un temporaire
+        ++sz;                 //La taille de la Hashtable augmente
+        return false;           //On a créé une insertion
+    }
+    /*Fonction qui indique la taille de la hashtable (nombre d'entrées effectives dedans)*/
+    size_t size() const{return sz;}
+
+    class iterator {
+        public:
+            iterator(HashTable<K, V>& hashTable, bool end = false)
+                : hashTable(hashTable), currentBucket(0) {
+                if (!end) {
+                    listIt = hashTable.bucket[currentBucket].begin();
+                }
+                else {
+                    listIt = hashTable.bucket[currentBucket].end();
+                }
+                findNextEntry();
+            }
+
+            iterator& operator++() {
+                ++listIt;
+                findNextEntry();
+                return *this;
+            }
+
+            bool operator!=(const iterator& other) const {
+                return currentBucket != other.currentBucket || listIt != other.listIt;
+            }
+
+            typename HashTable<K, V>::Entry& operator*() {
+                return *listIt;
+            }
+
+        private:
+            void findNextEntry() {
+                while (currentBucket < hashTable.bucket.size()) {
+                    if (listIt == hashTable.bucket[currentBucket].end()) {
+                        ++currentBucket;
+                        if (currentBucket < hashTable.bucket.size()) {
+                            listIt = hashTable.bucket[currentBucket].begin();
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            HashTable<K, V>& hashTable;
+            size_t currentBucket;
+            typename std::forward_list<typename HashTable<K, V>::Entry>::iterator listIt;
+        };
+
+    typename std::vector<std::forward_list<Entry>>::iterator begin() {
+        return bucket.begin();
+    }
+
+    typename std::vector<Entry>::iterator end() {
+        return bucket.end();
+    }
 
 
-	cout << "Nombre de mots non diff" << h.size() << endl;
+	};
+	template<typename Iterator>
+    		Iterator find(Iterator lit,Iterator end){
+    	}
 
-	auto end = steady_clock::now();
-    cout << "Parsing took "
-              << duration_cast<milliseconds>(end - start).count()
-              << "ms.\n";
-
-    cout << "Found a total of " << nombre_lu << " words." << endl;
-
-
-
-    int arr[] = {1,2,3,2,2,4,5,6};
-	int val = 2;
-	size_t result = count(arr, arr+sizeof(arr)/sizeof(arr[0]));
-	size_t result2 = count_if_equal(arr, arr+sizeof(arr)/sizeof(arr[0]),val);
-	std::cout <<"Le nombre d'éléments est :" << result << std::endl;
-	std::cout <<"Le nombre d'éléments égaux à 2 est :  " << result2 << std::endl;
-
-
-
-
-
-	return 0;
-}
+	};
