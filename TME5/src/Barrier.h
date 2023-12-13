@@ -1,44 +1,35 @@
-/*
- * Barrier.h
- *
- *  Created on: 18 oct. 2023
- *      Author: 21311838
- */
-
-#ifndef BARRIER_H_
-#define BARRIER_H_
-
+#pragma once
 
 #include <mutex>
-#include<cstdlib>
-#include<thread>
-#include<condition_variable>
-using namespace std;
+#include <condition_variable>
 
+namespace pr {
 
+class Barrier {
+    int cpt;
+    const int max;
+    std::mutex m;
+    std::condition_variable cv;
 
-class Barrier{
-	int counter;
-	const int max;
-	mutex m;
-	condition_variable cv;
 public :
-	Barrier(int max):max(max),counter(0){};
+    Barrier (int max) : cpt(0), max(max) {}
 
-	void done(){
-		unique_lock<mutex>lg(m);
-		counter++;
-		if(counter == max){
-			cv.notify_all();
-		}
-	}
-	void waitFor(){
-		unique_lock<mutex>lg(m);
-		while(counter != max ){
-			cv.wait(lg);
-		}
-	}
+    void done() {
+        unique_lock<mutex> ul(m);
+        cpt++;
+        if (cpt == max) { // tous les jobs sont finis : on débloque
+            cv.notify_all();
+        }
+    }
 
-};
+    void waitFor() {
+        unique_lock<mutex> ul(m);
+        while (cpt != max) {
+            cv.wait(ul);
+        }
+    }
 
-#endif /* BARRIER_H_ */
+}
+
+
+}
